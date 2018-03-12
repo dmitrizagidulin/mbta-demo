@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Demo Departures app</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
+</head>
+<body>
+<div class="container">
+  <h2 class="text-center">Demo Departures app</h2>
+
+  <div class="text-left">
+    <button class="btn btn-primary" id="refresh">Refresh</button>
+  </div>
+
+  <table class="table center">
+    <thead>
+      <tr>
+        <th>Origin</th>
+        <th>Time</th>
+        <th>Destination</th>
+        <th>Train #</th>
+        <th>Track #</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="departures">
+    </tbody>
+  </table>
+
+  <div class="container text-center" id="loading">
+    <img src="./ajax-loader.gif" /><br /><br />
+    Loading departures
+  </div>
+
+  <div class="container text-center hidden" id="errors">
+    Could not load departures. Please try again.
+  </div>
+</div>
+</body>
+
+<script>
+  var SERVER_URL = 'http://127.0.0.1:3000/departures'
+  var DIV_ERRORS = 'errors'
+  var DIV_DEPARTURES = 'departures'
+  var DIV_LOADING = 'loading'
+
+  // On load
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('refresh')
+      .addEventListener('click', () => refreshDepartures(SERVER_URL))
+
+    refreshDepartures(SERVER_URL)
+  })
+
+  /**
+   * Clears tables and fetches latest departures from the API.
+   * Displays spinner while loading, displays error in case they could not be
+   * fetched.
+   *
+   * @param url {string} API url to fetch departures from
+   *
+   * @returns {Promise}
+   */
+  function refreshDepartures (url) {
+    hide(DIV_ERRORS)
+    hide(DIV_DEPARTURES)
+    show(DIV_LOADING)
+
+    return fetchDepartures(url)
+
+      .then(updateDepartureTable)
+
+      .catch(error => {
+        console.error(error)
+
+        hide(DIV_LOADING)
+        hide(DIV_DEPARTURES)
+        show(DIV_ERRORS)
+      })
+  }
+
+  /**
+   * Fetches the departures from a given url.
+   * A successful fetch will yield an array of JSON-decoded Departure objects.
+   *
+   * @example <caption>Sample departure</caption>
+   * {
+   *   currentTime: '9:25 AM',
+   *   scheduledTime: '9:25 AM',
+   *   origin: 'South Station',
+   *   trip: 1719,
+   *   destination: 'Forge Park / 495',
+   *   lateness: 300,
+   *   track: '-',
+   *   status: 'Delayed',
+   *   statusText: 'Delayed 5 min'
+   * }
+   *
+   * @param url {string}
+   *
+   * @returns {Promise<Array<Departure>>}
+   */
+  function fetchDepartures (url) {
+    return fetch(url).then(res => res.json())
+  }
+
+  /**
+   * Updates the rows of a departure table from a list of departure objects.
+   *
+   * @param departures {Array<Departure>}
+   */
+  function updateDepartureTable (departures) {
+    hide(DIV_LOADING)
+    show(DIV_DEPARTURES)
+
+    // Clear existing table
+    let tableBody = document.getElementById(DIV_DEPARTURES)
+    tableBody.innerHTML = ''
+
+    for (let departure of departures) {
+      updateDepartureRow(tableBody, departure)
+    }
+  }
+
+  /**
+   * Adds the row and columns for a given departure to a table body.
+   *
+   * @param tableBody {Element} `<tbody>` element to add the row to
+   * @param departure {Departure}
+   */
+  function updateDepartureRow (tableBody, departure) {
+    let tr = document.createElement('tr')
+
+    tr.appendChild(document.createElement('td')).innerHTML = departure.origin
+    tr.appendChild(document.createElement('td')).innerHTML = departure.scheduledTime
+    tr.appendChild(document.createElement('td')).innerHTML = departure.destination
+    tr.appendChild(document.createElement('td')).innerHTML = departure.trip
+    tr.appendChild(document.createElement('td')).innerHTML = departure.track
+    tr.appendChild(document.createElement('td')).innerHTML = departure.statusText
+
+    tableBody.appendChild(tr)
+  }
+
+  /**
+   * Hides an element (div) with a given id.
+   *
+   * @param id {string}
+   */
+  function hide (id) {
+    let div = document.getElementById(id)
+
+    if (!div.className || !div.className.includes('hidden')) {
+      div.className = div.className + ' hidden'
+    }
+  }
+
+  /**
+   * Reveals an element with a given id
+   *
+   * @param id {string}
+   */
+  function show (id) {
+    var div = document.getElementById(id)
+    div.className = div.className.replace('hidden', '')
+  }
+</script>
+</html>
