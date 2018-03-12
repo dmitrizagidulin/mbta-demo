@@ -21,3 +21,9 @@ app.get('/departures', (req, res) => {
 })
 
 app.listen(PORT, () => console.log(`/departures API endpoint listening on port ${PORT}`))
+
+module.exports = {
+  DEFAULT_URL,
+  DEFAULT_TIMEZONE,
+  PORT
+}
