@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node ./src/index.js",
     "standard": "standard",
-    "mocha": "nyc mocha ./test/**/*.js",
+    "mocha": "mocha ./test",
     "test": "npm run standard && npm run mocha",
     "preversion": "npm test",
     "postversion": "git push --follow-tags"
@@ -34,7 +34,6 @@
     "dirty-chai": "^2.0.1",
     "mocha": "^5.0.4",
     "nock": "^9.2.3",
-    "nyc": "^11.4.1",
     "standard": "^11.0.0"
   },
   "nyc": {
